@@ -1,8 +1,7 @@
-package com.dynamic;
+package com.anlyn;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private Button download;
     private Button start;
 
-    private int mySessionId;
+    private int mySessionId=0;
 
     private static final String TAG = "MainActivity";
 
@@ -32,13 +31,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        splitInstallManager = SplitInstallManagerFactory.create(this);
         download = findViewById(R.id.download);
         start = findViewById(R.id.start);
 
         download.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (splitInstallManager.getInstalledModules().contains("dynamic_module"))
                 downloadDynamicModule();
             }
         });
@@ -47,24 +47,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent();
-                intent.setClassName("com.dynamic", "com.dynamic.module.DynamicActivity");
+                intent.setClassName("com.anlyn.dynamic.test", "com.anlyn.dynamic_module.DynamicActivity");
                 startActivity(intent);
             }
         });
 
     }
 
+    SplitInstallManager splitInstallManager;
+    SplitInstallStateUpdatedListener listener;
     private void downloadDynamicModule() {
-        SplitInstallManager splitInstallManager =
-                SplitInstallManagerFactory.create(this);
 
         SplitInstallRequest request =
                 SplitInstallRequest
                         .newBuilder()
-                        .addModule("dynamic-module")
+                        .addModule("dynamic_module")
                         .build();
 
-        SplitInstallStateUpdatedListener listener = new SplitInstallStateUpdatedListener() {
+        listener = new SplitInstallStateUpdatedListener() {
             @Override
             public void onStateUpdate(SplitInstallSessionState splitInstallSessionState) {
                 if(splitInstallSessionState.sessionId() == mySessionId) {
@@ -73,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(TAG, "Dynamic Module downloaded");
                             Toast.makeText(MainActivity.this, "Dynamic Module downloaded", Toast.LENGTH_SHORT).show();
                             break;
+
+                        case SplitInstallSessionStatus.FAILED:
+                            splitInstallManager.unregisterListener(listener);
                     }
                 }
             }
@@ -85,13 +88,21 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Exception e) {
                         Log.d(TAG, "Exception: " + e);
+                        Toast.makeText(MainActivity.this, "Exception: " + e, Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnSuccessListener(new OnSuccessListener<Integer>() {
                     @Override
                     public void onSuccess(Integer sessionId) {
                         mySessionId = sessionId;
+                        Log.d(TAG, "Success: $sessionId");
                     }
                 });
+    }
+
+    @Override
+    protected void onDestroy() {
+        splitInstallManager.unregisterListener(listener);
+        super.onDestroy();
     }
 }

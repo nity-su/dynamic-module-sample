@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
 
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
-        applicationId "com.dynamic"
-        minSdkVersion 19
-        targetSdkVersion 28
-        versionCode 1
+        applicationId "com.anlyn.dynamic.test"
+        minSdkVersion 27
+        targetSdkVersion 29
+        versionCode 12
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -19,14 +19,14 @@ android {
         }
     }
 
-    dynamicFeatures = [":dynamic-module"]
+    dynamicFeatures = [":dynamic_module"]
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.0.0-alpha1'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.0'
-    implementation 'com.google.android.play:core:1.3.1'
+    implementation 'com.google.android.play:core:1.10.0'
     testImplementation 'junit:junit:4.12'
 }
 
